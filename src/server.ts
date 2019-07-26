@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import { isString } from 'util';
 
 (async () => {
 
@@ -12,6 +13,13 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
+
+  //CORS Should be restricted
+  app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:8100");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    next();
+  });
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
@@ -30,6 +38,24 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   /**************************************************************************** */
 
   //! END @TODO1
+  app.get('/filteredimage', async (req: Request, res: Response) => {
+    let url =  req.query.image_url;
+    console.log("passed URL: %o", req.query.image_url);
+    if(!url || !isString(url)){
+      return res.status(400).send({message: 'invalid request - try /filteredimage?image_url={{}}'});
+    }
+
+    //valid-url is a package that was updated 6 year ago - need to 
+    //find another validation library
+    
+    // var validUrl = require('valid-url');
+    // if(!validUrl.isUri(url)){
+    //   return res.status(400).send({message: 'invalid url passed ' + url});
+    // }
+    return res.status(201).send({message : 'Valid url: '+url});
+
+   });
+
   
   // Root Endpoint
   // Displays a simple message to the user

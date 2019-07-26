@@ -38,3 +38,10 @@ Prevent requests without valid authentication headers.
 
 Add your own domain name and have it point to the running services (try adding a subdomain name to point to the processing server)
 > !NOTE: Domain names are not included in AWS’ free tier and will incur a cost.
+
+## Personal information
+
+### References
+Unfortunately the starter code reference isn't clear in the Udacity description. I've found more or less two ressources where to find different source bases.
+
+The one that is linked [inside the project description](https://github.com/udacity/cloud-developer/tree/master/course-02/project/image-filter-starter-code) and the other one that can be directly found at the [instructors git repository](https://github.com/grutt/udacity-c2-image-filter). The one from the project didn't contain the necessary python source code (I've copied them to `/src/pyhton`) and doesn't really give a hint of what is the expectation.
