@@ -51,6 +51,7 @@ export async function applyFilter(inPath: string) : Promise<string>{
         console.log(pythonProcess.output.toString());
     } else {
         console.log("Failed to start python instance");
+        outPath = "";
     }
     return outPath;
 }
