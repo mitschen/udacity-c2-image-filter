@@ -1,6 +1,7 @@
 import express from 'express';
+import { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import {filterImageFromURL, deleteLocalFiles, applyFilter} from './util/util';
 import { isString } from 'util';
 
 (async () => {
@@ -40,20 +41,53 @@ import { isString } from 'util';
   //! END @TODO1
   app.get('/filteredimage', async (req: Request, res: Response) => {
     let url =  req.query.image_url;
+    console.log("\n\n/filteredimage");
     console.log("passed URL: %o", req.query.image_url);
     if(!url || !isString(url)){
-      return res.status(400).send({message: 'invalid request - try /filteredimage?image_url={{}}'});
+      return res.status(422).send({message: 'invalid request - try /filteredimage?image_url={{}}'});
     }
 
-    //valid-url is a package that was updated 6 year ago - need to 
-    //find another validation library
-    
-    // var validUrl = require('valid-url');
-    // if(!validUrl.isUri(url)){
-    //   return res.status(400).send({message: 'invalid url passed ' + url});
-    // }
-    return res.status(201).send({message : 'Valid url: '+url});
+    console.log("Url passed " + url);
 
+   
+    
+    const https = require('https');
+    //verfiy the url
+    await https.get(url, (resp: any) => {
+      let data = '';
+      resp.on('data', (chunk: any) => { data += chunk; });
+    }).on('error', (err: any) => { return res.status(422).send({message: err.message}) });
+
+        
+    //read the image
+    let imagePath = await filterImageFromURL(url);
+    
+    //invalid image file
+    if(imagePath == ""){
+      return res.status(422).send({message: "Unaccessible ressource"});
+    }
+
+    //apply filtering
+    let filteredImagePath = await applyFilter(imagePath);
+
+    let resultingPath = imagePath;
+    if(filteredImagePath !== ""){
+      resultingPath = filteredImagePath;
+    }
+        
+    return res.status(200).sendFile(resultingPath, function(err) {
+      if(err){
+        console.log("Failed to send file at " + resultingPath);
+      } else {
+        console.log("Sucessfully send file at " + resultingPath);
+      }
+      if(filteredImagePath !== ""){
+        deleteLocalFiles([imagePath, filteredImagePath]);
+      } else {
+        deleteLocalFiles([imagePath]);
+      }
+      
+    });
    });
 
   
