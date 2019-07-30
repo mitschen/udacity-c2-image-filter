@@ -1,5 +1,7 @@
 import fs from 'fs';
 import Jimp = require('jimp');
+import { spawnSync } from 'child_process' ;
+import { reject } from 'bluebird';
 
 // filterImageFromURL
 // helper function to download, filter, and save the filtered image locally
@@ -10,15 +12,21 @@ import Jimp = require('jimp');
 //    an absolute path to a filtered image locally saved file
 export async function filterImageFromURL(inputURL: string): Promise<string>{
     return new Promise( async resolve => {
-        const photo = await Jimp.read(inputURL);
-        const outpath = '/tmp/filtered.'+Math.floor(Math.random() * 2000)+'.jpg';
-        await photo
-        .resize(256, 256) // resize
-        .quality(60) // set JPEG quality
-        .greyscale() // set greyscale
-        .write(__dirname+outpath, (img)=>{
-            resolve(__dirname+outpath);
-        });
+        try {
+          const photo = await Jimp.read(inputURL);
+          const outpath = '/tmp/filtered.'+Math.floor(Math.random() * 2000)+'.jpg';
+          await photo
+          .resize(256, 256) // resize
+          .quality(60) // set JPEG quality
+          .greyscale() // set greyscale
+          .write(__dirname+outpath, (img)=>{
+              resolve(__dirname+outpath);
+          });
+        } catch (err)
+        {
+          console.log("Error reading file"); 
+          resolve("");
+        };
     });
 }
 
@@ -31,4 +39,18 @@ export async function deleteLocalFiles(files:Array<string>){
     for( let file of files) {
         fs.unlinkSync(file);
     }
+}
+
+export async function applyFilter(inPath: string) : Promise<string>{
+    var path = require("path");
+    let ext: string = path.extname(inPath);
+    let outPath: string = path.basename(path.basename(inPath), ext);
+    outPath = path.join(path.dirname(inPath), outPath + 'f' + ext);
+    const pythonProcess = await spawnSync('python3', ["src/python/image_filter.py", inPath, outPath]);
+    if(pythonProcess.status == 0){
+        console.log(pythonProcess.output.toString());
+    } else {
+        console.log("Failed to start python instance");
+    }
+    return outPath;
 }
