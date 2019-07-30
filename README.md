@@ -102,3 +102,6 @@ Neither with the udacity-c2-restapi nor with this project it is possible for me 
 ### Bugs
 * (fixed) package.json: the start command is missing
 * (fixed) the main entry is incorrect
+
+
+[Path to the repository](https://github.com/mitschen/udacity-c2-image-filter/edit/master)
